@@ -1,47 +1,65 @@
-name: Validacao Tecnica
-on: [push]
+name: Validacao Tecnica e de Governanca
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  teste-ads:
+  validacao:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Codigo
-      uses: actions/checkout@v4
+      - name: Clonar repositorio completo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
-    - name: Configurar Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Configurar Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
 
-    - name: Executar Teste Automatizado ADS
-      run: |
-        OUTPUT=$(echo -e "20\n35" | python src/coleta_ads.py)
-        if [[ "$OUTPUT" =~ "Volume Total: 55" && "$OUTPUT" =~ "Status: Capacidade Maxima Atingida" ]]; then
-          echo "✅ Teste ADS Aprovado!"
-        else
-          echo "❌ Teste ADS Falhou: Motor de repetição ou tratamento de limite incorreto."
-          exit 1
-        fi
+      - name: Validar Conventional Commits
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            intervalo="$BASE_SHA..$HEAD_SHA"
+          elif git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            intervalo="$BASE_SHA..$HEAD_SHA"
+          else
+            intervalo="$HEAD_SHA^..$HEAD_SHA"
+          fi
 
-  teste-si:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Codigo
-      uses: actions/checkout@v4
+          padrao='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9._/-]+\))?!?: .+'
+          while IFS= read -r mensagem; do
+            [ -z "$mensagem" ] && continue
+            if [[ ! "$mensagem" =~ $padrao ]]; then
+              echo "Commit fora do padrao: $mensagem"
+              exit 1
+            fi
+          done < <(git log --no-merges --format=%s "$intervalo")
 
-    - name: Configurar Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Verificar sintaxe Python
+        run: python -m compileall -q src tests
 
-    - name: Executar Teste Automatizado SI
-      run: |
-        python -c "
-        from src.governanca_si import calcular_eficiencia_financeira
-        res = calcular_eficiencia_financeira(10.0)
-        if res == 'Alerta: Alto Custo de Ociosidade Detectado':
-            print('✅ Teste SI Aprovado!')
-        else:
-            print('❌ Teste SI Falhou: Logica de calculo de ociosidade incorreta.')
-            exit(1)
-        "
+      - name: Executar testes automatizados
+        run: python -m unittest discover -s tests -v
+
+      - name: Validar fluxo integrado ADS
+        shell: bash
+        run: |
+          saida="$(printf '20\n35\n' | python -m src.coleta_ads)"
+          grep -Fq "Volume Total: 55 m³" <<< "$saida"
+          grep -Fq "Status: Capacidade Maxima Atingida" <<< "$saida"
+
+      - name: Validar regra de governanca SI
+        run: >-
+          python -c "from src.governanca_si import calcular_eficiencia_financeira;
+          assert calcular_eficiencia_financeira(10) ==
+          'Alerta: Alto Custo de Ociosidade Detectado'"
