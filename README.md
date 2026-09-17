@@ -52,14 +52,6 @@ Instrução: Edite as seções abaixo preenchendo as evidências críticas da du
 Com base no cenário proposto da semana, descreva qual o impacto humano, social, ético ou ambiental da tecnologia que sua célula colocou em produção. Como as decisões de código impactam o mundo físico e a vida do cidadão/empresa?
 💬 RESPOSTA DA CÉLULA: [Escreva sua análise crítica aqui]
 
-## 🌱 Seção de Compliance Ambiental e Green IT
-
-O monitoramento estruturado do volume transportado transforma dados operacionais da frota em evidências para a governança de TI. Ao registrar a capacidade máxima de 50 m³ e considerar como economicamente inviáveis as viagens com carga inferior a 15 m³, o sistema identifica situações de ociosidade que aumentam o custo por operação e o consumo desnecessário de combustível. Esses parâmetros tornam a decisão auditável, pois a mesma regra pode ser aplicada e conferida em todas as execuções.
-
-Sob a perspectiva de *Green IT*, consolidar cargas e evitar o deslocamento de veículos com baixa ocupação reduz a quantidade de viagens, o consumo de combustíveis fósseis e, consequentemente, as emissões de dióxido de carbono. Os indicadores de redução de CO₂ e economia de combustível permitem acompanhar tanto o impacto ambiental quanto a eficiência financeira da operação.
-
-Entretanto, o alerta produzido pelo sistema deve apoiar, e não substituir, a decisão humana. Situações urgentes ou serviços essenciais podem justificar uma viagem abaixo do limite de 15 m³. Por isso, a governança deve manter o parâmetro documentado, revisar periodicamente os indicadores e registrar as exceções, conciliando eficiência econômica, responsabilidade ambiental e continuidade do serviço.
-
 ## 💻 Seção de Engenharia e Governança de TI
 
 Justifique a decisão de arquitetura técnica adotada pela célula nesta entrega. Como as regras de negócio de ADS e as estruturas de dados de SI foram construidas para garantir que a solução seja escalável e de fácil manutenção?
